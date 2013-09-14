@@ -20,7 +20,7 @@ function ninja_forms_custom_file_type_check( $field_id ){
 	user_file_name: "file.png"
 	*/
 	$user_value = $ninja_forms_processing->get_field_value( $field_id );
-	
+	fb($user_value);
 	/*
 	$field[data]
 		calc_auto_include: "0"
@@ -63,17 +63,30 @@ function ninja_forms_custom_file_type_check( $field_id ){
 			
 			$ext = strtolower( $ext );
 			if ( in_array( $ext, $image_types ) ) {
-				fb('convert file to '.$dir.'/'.$newjpg);
 				//auto-orient the image and convert to jpg.
-				curl_exec('mogrify -auto-orient -verbose -format jpg '.$dir."/".$user_file_name,$output);
-				$output = shell_exec('mogrify -auto-orient -verbose -format jpg '.$dir."/".$user_file_name);
+				exec('sh jpegify '.$dir ,$ouput, $return);
+				fb('mogrify -auto-orient -verbose -format jpg '.$dir);
+				fb($output[0]);
+				
+					
+				$random = generateRandomString(21);
+				$new_file_name = $random . '.jpg';
+				$new_file_url = $url.'/'.$new_file_name;
+
+				if ($return != 0) {
 				fb($output);
-				$data['file_name'] = $base.'.jpg';
-				$data['file_url'] = $url."/".$base.'.jpg';
-				$data['user_file_name'] = $base.'.jpg';
-				fb($data['file_name'] . ', ' . $data['file_url'] . ', ' . $data['user_file_name']);
+					echo ('File upload Failed');
+					die ('ERROR: File conversion failed.');
+				}
+				
+				
+				fb($data);
+				$data['file_name'] = $new_file_name;
+				$data['file_url'] = $new_file_url ;
 				$field['data']['featured_image'] = 1;
 				$field['data']['post_meta_value'] = '';
+				
+				fb($data);
 			} else {
 				$field['data']['featured_image'] = 0;
 				$field['data']['post_meta_value'] = 'video_url';
@@ -81,7 +94,12 @@ function ninja_forms_custom_file_type_check( $field_id ){
 			}
 		}
 	}
+	fb('updating field settings...');
 	$ninja_forms_processing->update_field_settings( $field_id, $field );
+	fb('update complete - '.$new_file_url);
+	//fb('updating field values...');
+	//$ninja_forms_processing->update_field_value($field_id, $data);
+
 }
 
 add_action( 'ninja_forms_upload_pre_process', 'ninja_forms_custom_file_type_check' );
@@ -98,5 +116,12 @@ function ninja_forms_custom_post_meta_filter( $value, $field_id ){
 
 add_filter( 'ninja_forms_add_post_meta_value', 'ninja_forms_custom_post_meta_filter', 10, 2 );
 
-
+function generateRandomString($length = 10) {
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $randomString = '';
+    for ($i = 0; $i < $length; $i++) {
+        $randomString .= $characters[rand(0, strlen($characters) - 1)];
+    }
+    return $randomString;
+}
 
