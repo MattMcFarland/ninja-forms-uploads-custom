@@ -20,7 +20,9 @@ function ninja_forms_custom_file_type_check( $field_id ){
 	user_file_name: "file.png"
 	*/
 	$user_value = $ninja_forms_processing->get_field_value( $field_id );
-	fb($user_value);
+	fb($user_value[0]);
+	fb($user_value[1]);
+	fb($user_value[2]);
 	/*
 	$field[data]
 		calc_auto_include: "0"
@@ -48,6 +50,7 @@ function ninja_forms_custom_file_type_check( $field_id ){
 	
 	if ( is_array ( $user_value ) ) {
 		foreach ( $user_value as $key => $data ) {
+			fb('key - '.$key);
 			$dir = $data['file_path'];
 			$data_url = $data['file_url'];
 			$url_array = explode("/",$data_url);
@@ -81,8 +84,8 @@ function ninja_forms_custom_file_type_check( $field_id ){
 				
 				
 				fb($data);
-				$data['file_name'] = $new_file_name;
-				$data['file_url'] = $new_file_url ;
+				$user_value['file_name'] = $new_file_name;
+				$user_value['file_url'] = $new_file_url ;
 				$field['data']['featured_image'] = 1;
 				$field['data']['post_meta_value'] = '';
 				
@@ -95,10 +98,10 @@ function ninja_forms_custom_file_type_check( $field_id ){
 		}
 	}
 	fb('updating field settings...');
-	$ninja_forms_processing->update_field_settings( $field_id, $field );
+	$ninja_forms_processing->update_field_value($field_id, $user_value);
+	//$ninja_forms_processing->update_field_settings( $field_id, $field );
 	fb('update complete - '.$new_file_url);
-	//fb('updating field values...');
-	//$ninja_forms_processing->update_field_value($field_id, $data);
+	fb('updating field values...');
 
 }
 
